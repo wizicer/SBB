@@ -11,6 +11,8 @@ SBB.py (Sina Blog URL) (asc|desc)
 
 The sort order argument is optional. By default, articles will be sorted chronically (asc).
 
+if you are downloading hidden blog, you can write the authenticated cookie string into `cookie.txt` file.
+
 ###Example:
 
 - SBB.py http://blog.sina.com.cn/gongmin desc
@@ -45,7 +47,9 @@ SBB.py (新浪博客地址) (desc|asc)
 
 排序开关是可选的，默认为按发表时间顺序排列（即 asc）。
 
-例子：
+如果你要拉取的是隐藏博客，可以将验证后的cookie写入`cookie.txt`文件，再进行拉取。
+
+### 例子：
 
 - SBB.py http://blog.sina.com.cn/gongmin desc
 - SBB.py http://blog.sina.com.cn/u/1239657051

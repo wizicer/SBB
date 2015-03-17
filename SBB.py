@@ -12,6 +12,9 @@ Or simply save them anywhere as archives.
 
 import sys, urllib2
 from time import strftime
+import os.path
+
+opener = urllib2.build_opener()
 
 def getBetween(str, str1, str2):
   strOutput = str[str.find(str1)+len(str1):str.find(str2)]
@@ -31,13 +34,22 @@ try :
 except :
   strUserOrder = ""
 
+# read cookie
+if os.path.isfile('cookie.txt') :
+  file = open('cookie.txt', 'r')
+  cookie = file.read()
+  opener.addheaders.append(('Cookie', cookie))
+
+# prepare the `Posts` folder
+os.mkdir('Posts')
+
 #The URL *must* start with http://blog.sina.com.cn/, otherwise the universe will be destroied XD
 if strUserInput.find("http://blog.sina.com.cn/") == -1 or len(strUserInput) <= 24 :
   print strUsage
   sys.exit(0)
 
 #Get UID for the blog, UID is critical.
-objResponse = urllib2.urlopen(strUserInput)
+objResponse = opener.open(strUserInput)
 strResponse = objResponse.read()
 objResponse.close()
 
@@ -54,7 +66,7 @@ strTargetUID = strUID
 #Step 1: get list for first page and article count
 strTargetBlogListURL = "http://blog.sina.com.cn/s/articlelist_" + strTargetUID + "_0_1.html"
 
-objResponse = urllib2.urlopen(strTargetBlogListURL)
+objResponse = opener.open(strTargetBlogListURL)
 strResponse = objResponse.read()
 objResponse.close()
 
@@ -71,7 +83,7 @@ strBlogName = getBetween(getBetween(strResponse, "<title>", "</title>"), "博文
 #Step 2: get list for the rest of pages
 for intCurrentPage in range(intPageCount - 1) :
   strTargetBlogListURL = "http://blog.sina.com.cn/s/articlelist_" + strTargetUID + "_0_" + str(intCurrentPage + 2) + ".html"
-  objResponse = urllib2.urlopen(strTargetBlogListURL)
+  objResponse = opener.open(strTargetBlogListURL)
   strResponse = objResponse.read()
   strBlogPostList = getBetween(getBetween(strResponse,"$blogArticleSortArticleids","$blogArticleCategoryids"), " : [", "],")
   strBlogPostID = strBlogPostID + "," + strBlogPostList
@@ -93,7 +105,7 @@ strHTML4Index = ""
 for strCurrentBlogPostID in arrBlogPost :
   intCounter  = intCounter + 1
   strTargetBlogPostURL = "http://blog.sina.com.cn/s/blog_" + strCurrentBlogPostID + ".html"
-  objResponse = urllib2.urlopen(strTargetBlogPostURL)
+  objResponse = opener.open(strTargetBlogPostURL)
   strPageCode = objResponse.read()
   objResponse.close()
 
@@ -112,7 +124,7 @@ for strCurrentBlogPostID in arrBlogPost :
   strBlogPostTime  = getBetween(strPageCode, '<span class="time SG_txtc">(', ')</span><div class="turnBoxzz">')
 
   #Write into local file
-  strLocalFilename = "Post_" + str(intCounter) + "_" + strCurrentBlogPostID + ".html"
+  strLocalFilename = "Posts/Post_" + str(intCounter) + "_" + strCurrentBlogPostID + ".html"
   strHTML4Post = "<html>\n<head>\n<meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"" />\n<title>" + strBlogPostTitle + "</title>\n<link href=""http://simg.sinajs.cn/blog7style/css/conf/blog/article.css"" type=""text/css"" rel=""stylesheet"" />\n</head>\n<body>\n<h2>" + strBlogPostTitle + "</h2>\n<p>By: <em>" + strBlogName + "</em> 原文发布于：<em>" + strBlogPostTime + "</em></p>\n" + strBlogPostBody + "\n<p><a href=""index.html"">返回目录</a></p>\n</body>\n</html>"
   objFileArticle = open(strLocalFilename, "w")
   objFileArticle.write(strHTML4Post);
